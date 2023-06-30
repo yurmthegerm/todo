@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import { useState } from 'react';
 
 function Header(props) {
   return <header>
@@ -33,18 +34,26 @@ function Article(props) {
 }
 
 function App() {
+  const [mode, setMode] = useState('WELCOME');
   const topics = [
-    {id:1, title:'title', body:'body ...'}
+    {id:1, title:'title', body:'body ...'},
+    {id:2, title:'title 2', body:'body 2 ...'}
   ]
+  let content = null;
+  if (mode === 'WELCOME') {
+    content = <Article title='Welcome' body='Hello, WEB'></Article>
+  } else if (mode === 'READ') {
+    content = <Article title='READ' body='Hello, READ'></Article>
+  }
   return (
     <div>
-      <Header title='REACT' onChangeMode={()=>{
-        alert('Header');
+      <Header title='WEB' onChangeMode={()=>{
+        setMode('WELCOME');
       }}></Header>
       <Nav topics={topics} onChangeMode={id=>{
-        alert(id);
+        setMode('READ');
       }}></Nav>
-      <Article title='Welcome' body='Hello, WEB'></Article>
+      {content}
     </div>
   );
 }
