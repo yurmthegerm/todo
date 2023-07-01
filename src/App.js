@@ -3,11 +3,11 @@ import { useState } from 'react';
 
 function Header(props) {
   return <header>
-    <h1><a href='/' onClick={event=>{
-      event.preventDefault();
-      props.onChangeMode();
-    }}>{props.title}</a></h1>
-  </header>
+		<h1><a href="/" className='header-link' onClick={(event)=>{
+			event.preventDefault();
+			props.onChangeMode();
+		}}>{props.title}</a></h1>
+	</header>
 }
 
 function Nav(props) {
@@ -79,6 +79,7 @@ function App() {
     {id:2, title:'title 2', body:'body 2 ...'},
     {id:3, title:'title 3', body:'body 3 ...'}
   ])
+
   let content = null;
   let contextControl = null;
   if (mode === 'WELCOME') {
@@ -93,11 +94,11 @@ function App() {
 			}
 		content = <Article title={title} body={body}></Article>
     contextControl = <>
-      <li><a href={'/update/'+id} onClick={event => {
+      <button className='update' href={'/update/'+id} onClick={event => {
         event.preventDefault();
         setMode('UPDATE');
-      }}>UPDATE</a></li>
-      <li><input type="button" value="Delete" onClick={()=>{
+      }}>UPDATE</button>
+      <input className='delete' type="button" value="Delete" onClick={()=>{
 				const newTopics = [];
 				for (let i=0; i<topics.length; i++) {
 					if(topics[i].id !== id) {
@@ -106,7 +107,7 @@ function App() {
 				}
 				setTopics(newTopics);
 				setMode('WELCOME');
-			}}/></li>
+			}}/>
     </>
   } else if (mode === 'CREATE') {
     content = <Create onCreate={(_title, _body)=>{
@@ -141,22 +142,34 @@ function App() {
 	}
 
   return (
-    <div>
-      <Header title='WEB' onChangeMode={()=>{
+    <div className='screen'>
+
+      <Header title='To Do' onChangeMode={()=>{
         setMode('WELCOME');
       }}></Header>
-      <Nav topics={topics} onChangeMode={_id=>{
-        setMode('READ');
-        setId(_id);
-      }}></Nav>
-      {content}
-      <ul>
-        <li><a href='/create' onClick={event => {
-        event.preventDefault();
-        setMode('CREATE');
-        }}>CREATE</a></li>
-        {contextControl}
-      </ul>
+
+      <div className='divide'>
+        <div className='left'>
+          <Nav topics={topics} onChangeMode={_id=>{
+            setMode('READ');
+            setId(_id);
+          }}></Nav>
+        </div>
+        <div className='right'>
+          {content}
+        </div>
+      </div>
+      
+      <div className='buttons'>
+        <ul>
+          <button className='create' href='/create' onClick={event => {
+          event.preventDefault();
+          setMode('CREATE');
+          }}>CREATE</button>
+          
+          {contextControl}
+        </ul>
+      </div>
     </div>
   );
 }

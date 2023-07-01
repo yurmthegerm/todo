@@ -1,0 +1,45 @@
+header {
+  text-align: center;
+  padding: 50px;
+  padding-top: 150px;
+  background-color: beige;
+}
+
+.header-link {
+  text-decoration: none;
+  color: black;
+  cursor: pointer;
+}
+
+.divide {
+  border: 1px solid black;
+  padding: 5px;
+
+  display: flex;
+  height: 500px;
+}
+
+.left {
+  border: 2px dotted red;
+  padding: 5px;
+
+  width: 30%;
+}
+
+.right {
+  border: 2px dotted green;
+  padding: 5px;
+
+  width: 70%;
+  white-space: pre-line;
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  word-wrap: break-word;
+}
+
+.buttons {
+  border: 1px solid plum;
+
+
+}
