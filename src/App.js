@@ -2,12 +2,12 @@ import './App.css';
 import { useState } from 'react';
 
 function Header(props) {
-  return <header>
-		<h1><a href="/" className='header-link' onClick={(event)=>{
+  return <div>
+		<h1><a href="/" className='header' onClick={(event)=>{
 			event.preventDefault();
 			props.onChangeMode();
 		}}>{props.title}</a></h1>
-	</header>
+	</div>
 }
 
 function Nav(props) {
@@ -18,7 +18,7 @@ function Nav(props) {
 				props.onChangeMode(Number(event.target.id));
       }}>{topic.title}</a></li>
 	);
-  return <nav>
+  return <nav className='topics'>
     <ol>
       {lst}
     </ol>
@@ -27,14 +27,14 @@ function Nav(props) {
 
 function Article(props) {
   return <article>
-    <h2>{props.title}</h2>
-    {props.body}
+    <h2 className='detailed-title'>{props.title}</h2>
+    <p className='detailed-body'>{props.body}</p>
   </article>
 }
 
 function Create(props) {
   return <article>
-    <h2>Create</h2>
+    <h2>heading for new</h2>
     <form onSubmit={event=>{
       event.preventDefault();
       const title = event.target.title.value;
@@ -43,7 +43,7 @@ function Create(props) {
     }}>
       <p><input type="text" name="title" placeholder="title"/></p>
 			<p><textarea name="body" placeholder="body"></textarea></p>
-			<p><input type="submit" value="Create"></input></p>
+			<p><input className='create' type="submit" value="Create"></input></p>
     </form>
   </article>
 }
@@ -52,7 +52,6 @@ function Update(props){
 	const [title, setTitle] = useState(props.title);
 	const [body, setBody] = useState(props.body);
 	return <article>
-		<h2>Update</h2>
 		<form onSubmit={(event)=>{
 			event.preventDefault();
 			const title = event.target.title.value;
@@ -65,7 +64,7 @@ function Update(props){
 			<p><textarea name="body" placeholder="body" value={body} onChange={event=>{
 				setBody(event.target.value);
 			}}></textarea></p>
-			<p><input type="submit" value="Update"></input></p>
+			<p><input type="submit" value="Save Changes"></input></p>
 		</form>
 	</article>
 }
@@ -73,12 +72,29 @@ function Update(props){
 function App() {
   const [mode, setMode] = useState('WELCOME');
   const [id, setId] = useState(null);
-  const [nextId, setNextId] = useState(4)
-  const [topics, setTopics] = useState([
-    {id:1, title:'title', body:'body ...'},
-    {id:2, title:'title 2', body:'body 2 ...'},
-    {id:3, title:'title 3', body:'body 3 ...'}
-  ])
+  const [nextId, setNextId] = useState(1);
+  const [topics, setTopics] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleDeleteClick = () => {
+    setShowModal(true);
+  };
+
+  const handleModalConfirm = () => {
+    setShowModal(false);
+    const newTopics = [];
+    for (let i=0; i<topics.length; i++) {
+      if(topics[i].id !== id) {
+        newTopics.push(topics[i]);
+      }
+    }
+    setTopics(newTopics);
+    setMode('WELCOME');
+  };
+    
+  const handleModalCancel = () => {
+    setShowModal(false);
+  };
 
   let content = null;
   let contextControl = null;
@@ -94,20 +110,27 @@ function App() {
 			}
 		content = <Article title={title} body={body}></Article>
     contextControl = <>
-      <button className='update' href={'/update/'+id} onClick={event => {
+      <button className='edit' href={'/update/'+id} onClick={event => {
         event.preventDefault();
         setMode('UPDATE');
-      }}>UPDATE</button>
-      <input className='delete' type="button" value="Delete" onClick={()=>{
-				const newTopics = [];
-				for (let i=0; i<topics.length; i++) {
-					if(topics[i].id !== id) {
-						newTopics.push(topics[i]);
-					}
-				}
-				setTopics(newTopics);
-				setMode('WELCOME');
-			}}/>
+      }}>Edit</button>
+      <div>
+        <input className='delete' type="button" value="Delete" onClick={handleDeleteClick}/>
+        {showModal && (
+          <div className='modal'>
+            <div className="modal-container">
+              <div className='modal-box'>
+                <p>{'Delete ' + title + '?'}</p>
+                <div className="modal-buttons">
+                  <button onClick={handleModalConfirm}>확인</button>
+                  <button onClick={handleModalCancel}>취소</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {showModal && <div className='modal-backdrop' onClick={handleModalCancel} />}
+      </div>
     </>
   } else if (mode === 'CREATE') {
     content = <Create onCreate={(_title, _body)=>{
@@ -144,14 +167,25 @@ function App() {
   return (
     <div className='screen'>
 
-      <Header title='To Do' onChangeMode={()=>{
-        setMode('WELCOME');
-      }}></Header>
+      <div className='heading'>
+        <Header title='header' onChangeMode={()=>{
+          setMode('WELCOME');
+        }}></Header>
+      </div>
 
-      <div className='divide'>
+      <div className='buttons'>
+        <button className='new' href='/create' onClick={event => {
+          event.preventDefault();
+          setMode('CREATE');
+          }}>New</button>
+
+        {contextControl}
+      </div>
+
+      <div className='content'>
         <div className='left'>
           <Nav topics={topics} onChangeMode={_id=>{
-            setMode('READ');
+            setMode('READ'); 
             setId(_id);
           }}></Nav>
         </div>
@@ -160,16 +194,6 @@ function App() {
         </div>
       </div>
       
-      <div className='buttons'>
-        <ul>
-          <button className='create' href='/create' onClick={event => {
-          event.preventDefault();
-          setMode('CREATE');
-          }}>CREATE</button>
-          
-          {contextControl}
-        </ul>
-      </div>
     </div>
   );
 }
