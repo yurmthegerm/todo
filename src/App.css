@@ -1,3 +1,18 @@
+.heading {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+.header {
+  text-decoration: none;
+  color: black;
+  cursor: pointer;
+  font-size: 4vw;
+}
+
 .modal-container {
   position: fixed;
   top: 0;
@@ -16,3 +31,5 @@
   padding: 20px;
   border-radius: 8px;
 }
+
+
