@@ -1,5 +1,5 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function Header(props) {
   return <div>
@@ -11,19 +11,85 @@ function Header(props) {
 }
 
 function Nav(props) {
-  const lst = props.topics.map(topic =>
-		<li key={topic.id}>
-      <a id={topic.id} href={'/read/'+topic.id} onClick={event => {
-        event.preventDefault();
-				props.onChangeMode(Number(event.target.id));
-      }}>{topic.title}</a></li>
-	);
-  return <nav className='topics'>
-    <ol>
-      {lst}
-    </ol>
-  </nav>
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const lst = props.topics.map((topic) => {
+    let displayTitle = topic.title;
+    if (topic.title.length > 0) {
+      if (topic.title.length > 4 && windowWidth <= 600) {
+        const nextParagraphIndex = topic.title.indexOf('\n', 4);
+        if (nextParagraphIndex > 0) {
+          displayTitle = topic.title.slice(0, nextParagraphIndex) + "...";
+        } else {
+          displayTitle = topic.title.slice(0, 4) + "...";
+        }
+      } else if (topic.title.length > 6 && windowWidth <= 1000) { // 스크린 너비가 600px 이하인 경우에만 생략 부호 표시
+        const nextParagraphIndex = topic.title.indexOf('\n', 6);
+        if (nextParagraphIndex > 0) {
+          displayTitle = topic.title.slice(0, nextParagraphIndex) + "...";
+        } else {
+          displayTitle = topic.title.slice(0, 6) + "...";
+        }
+      } else if (topic.title.length > 11 && windowWidth <= 1500) {
+        const nextParagraphIndex = topic.title.indexOf('\n', 11);
+          if (nextParagraphIndex > 0) {
+            displayTitle = topic.title.slice(0, nextParagraphIndex) + "...";
+          } else {
+            displayTitle = topic.title.slice(0, 11) + "...";
+          }
+      } else if (topic.title.length > 15 && windowWidth <= 1800) {
+        const nextParagraphIndex = topic.title.indexOf('\n', 15);
+          if (nextParagraphIndex > 0) {
+            displayTitle = topic.title.slice(0, nextParagraphIndex) + "...";
+          } else {
+            displayTitle = topic.title.slice(0, 15) + "...";
+          }
+      }
+    } else {
+      if (windowWidth <= 600) {
+        displayTitle = "(no ...";
+      } else {
+        displayTitle = "(no title)";
+      }
+      
+    }
+
+    return (
+      <li key={topic.id}>
+        <a
+          id={topic.id}
+          href={"/read/" + topic.id}
+          title={topic.title}
+          onClick={(event) => {
+            event.preventDefault();
+            props.onChangeMode(Number(event.target.id));
+          }}
+        >
+          {displayTitle}
+        </a>
+      </li>
+    );
+  });
+
+  return (
+    <nav>
+      <ol className="topics">{lst}</ol>
+    </nav>
+  );
 }
+
 
 function Article(props) {
   return <article>
@@ -41,8 +107,8 @@ function Create(props) {
       const body = event.target.body.value;
       props.onCreate(title, body);
     }}>
-      <p><input type="text" name="title" placeholder="title"/></p>
-			<p><textarea name="body" placeholder="body"></textarea></p>
+      <p><input className='title' type="text" name="title" placeholder="title" maxLength="21"/></p>
+			<p><textarea className='body' name="body" placeholder="body"></textarea></p>
 			<p><input className='create' type="submit" value="Create"></input></p>
     </form>
   </article>
@@ -58,13 +124,13 @@ function Update(props){
 			const body = event.target.body.value;
 			props.onUpdate(title, body);
 		}}>
-			<p><input type="text" name="title" placeholder="title" value={title} onChange={event=>{
+			<p><input className='title' type="text" name="title" placeholder="title" value={title} maxLength="21" onChange={event=>{
 				setTitle(event.target.value);
 			}}/></p>
-			<p><textarea name="body" placeholder="body" value={body} onChange={event=>{
+			<p><textarea className='body' name="body" placeholder="body" value={body} onChange={event=>{
 				setBody(event.target.value);
 			}}></textarea></p>
-			<p><input type="submit" value="Save Changes"></input></p>
+			<p><input className='save-changes' type="submit" value="Save Changes"></input></p>
 		</form>
 	</article>
 }
@@ -104,12 +170,12 @@ function App() {
     let title, body = null;
 			for (let i = 0; i < topics.length; i++) {
 				if (topics[i].id === id){
-					title = topics[i].title;
-					body = topics[i].body;
+					title = topics[i].title.length > 0 ? topics[i].title : '(no title)';
+					body = topics[i].body.length > 0 ? topics[i].body : '(no body)';
 				}
 			}
 		content = <Article title={title} body={body}></Article>
-    contextControl = <>
+    contextControl = <div className='contextControl'>
       <button className='edit' href={'/update/'+id} onClick={event => {
         event.preventDefault();
         setMode('UPDATE');
@@ -117,21 +183,19 @@ function App() {
       <div>
         <input className='delete' type="button" value="Delete" onClick={handleDeleteClick}/>
         {showModal && (
-          <div className='modal'>
-            <div className="modal-container">
-              <div className='modal-box'>
-                <p>{'Delete ' + title + '?'}</p>
-                <div className="modal-buttons">
-                  <button onClick={handleModalConfirm}>확인</button>
-                  <button onClick={handleModalCancel}>취소</button>
-                </div>
+          <div className="modal-container">
+            <div className='modal-box'>
+              <p>{'Delete ' + title + '?'}</p>
+              <div className="modal-buttons">
+                <button onClick={handleModalConfirm}>확인</button>
+                <button onClick={handleModalCancel}>취소</button>
               </div>
             </div>
           </div>
         )}
         {showModal && <div className='modal-backdrop' onClick={handleModalCancel} />}
       </div>
-    </>
+    </div>
   } else if (mode === 'CREATE') {
     content = <Create onCreate={(_title, _body)=>{
       const newTopic = {id:nextId, title:_title, body:_body};
@@ -173,23 +237,26 @@ function App() {
         }}></Header>
       </div>
 
-      <div className='buttons'>
-        <button className='new' href='/create' onClick={event => {
-          event.preventDefault();
-          setMode('CREATE');
-          }}>New</button>
-
-        {contextControl}
-      </div>
-
       <div className='content'>
         <div className='left'>
-          <Nav topics={topics} onChangeMode={_id=>{
-            setMode('READ'); 
-            setId(_id);
-          }}></Nav>
+          <div className='buttons'>
+            <button className='new' href='/create' onClick={event => {
+              event.preventDefault();
+              setMode('CREATE');
+          }}>New</button>
+          </div>
+
+          <div className='lst'>
+            <Nav topics={topics} onChangeMode={_id=>{
+              setMode('READ'); 
+              setId(_id);
+            }}></Nav>
+          </div>
         </div>
         <div className='right'>
+          <div className='buttons'>
+            {contextControl} 
+          </div> 
           {content}
         </div>
       </div>
